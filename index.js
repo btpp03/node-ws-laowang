@@ -14,12 +14,12 @@ const UUID = process.env.UUID || '5efabea4-f6d4-91fd-b8f0-17e004c89c60';
 const NEZHA_SERVER = process.env.NEZHA_SERVER || 'nezhak2.btpp.ggff.net';
 const NEZHA_PORT = process.env.NEZHA_PORT || '443';
 const NEZHA_KEY = process.env.NEZHA_KEY || 'wS9TZMEGMnuLjRyH6Y';
-const DOMAIN = process.env.DOMAIN || 'rs00283653.oners.jp';
+const DOMAIN = process.env.DOMAIN || 'rs00283653.oners.jp:55671';
 const AUTO_ACCESS = process.env.AUTO_ACCESS || false;
 const WSPATH = process.env.WSPATH || UUID.slice(0, 8);
 const SUB_PATH = process.env.SUB_PATH || 'bus';
 const NAME = process.env.NAME || 'value-domain';
-const PORT = process.env.PORT || 55071;
+const PORT = process.env.PORT || 55671;
 
 let uuid = UUID.replace(/-/g, ""), CurrentDomain = DOMAIN, Tls = 'tls', CurrentPort = 443, ISP = '';
 const vmsUser = { id: UUID, alterId: 0, security: 'auto' };
