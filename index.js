@@ -18,7 +18,7 @@ const DOMAIN = process.env.DOMAIN || 'rs00283653.oners.jp:55671';
 const AUTO_ACCESS = process.env.AUTO_ACCESS || false;
 const WSPATH = process.env.WSPATH || UUID.slice(0, 8);
 const SUB_PATH = process.env.SUB_PATH || 'bus';
-const NAME = process.env.NAME || 'value-domain';
+const NAME = process.env.NAME || 'hostone-sg';
 const PORT = process.env.PORT || 55671;
 
 let uuid = UUID.replace(/-/g, ""), CurrentDomain = DOMAIN, Tls = 'tls', CurrentPort = 443, ISP = '';
