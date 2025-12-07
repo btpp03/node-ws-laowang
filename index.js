@@ -19,7 +19,7 @@ const AUTO_ACCESS = process.env.AUTO_ACCESS || false;
 const WSPATH = process.env.WSPATH || UUID.slice(0, 8);
 const SUB_PATH = process.env.SUB_PATH || 'bus';
 const NAME = process.env.NAME || 'kingdomais';
-const PORT = process.env.PORT || 21190;
+const PORT = process.env.PORT || 25927;
 
 let uuid = UUID.replace(/-/g, ""), CurrentDomain = DOMAIN, Tls = 'tls', CurrentPort = 443, ISP = '';
 const vmsUser = { id: UUID, alterId: 0, security: 'auto' };
