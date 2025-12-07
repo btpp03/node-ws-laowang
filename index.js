@@ -14,11 +14,11 @@ const UUID = process.env.UUID || '5efabea4-f6d4-91fd-b8f0-17e004c89c60';
 const NEZHA_SERVER = process.env.NEZHA_SERVER || 'nezhak2.btpp.ggff.net';
 const NEZHA_PORT = process.env.NEZHA_PORT || '443';
 const NEZHA_KEY = process.env.NEZHA_KEY || 'InfKxivl5ubv3J0dZA';
-const DOMAIN = process.env.DOMAIN || '91.197.6.16:21190';
+const DOMAIN = process.env.DOMAIN || '';
 const AUTO_ACCESS = process.env.AUTO_ACCESS || false;
 const WSPATH = process.env.WSPATH || UUID.slice(0, 8);
 const SUB_PATH = process.env.SUB_PATH || 'bus';
-const NAME = process.env.NAME || 'minestrator';
+const NAME = process.env.NAME || 'kingdomais';
 const PORT = process.env.PORT || 21190;
 
 let uuid = UUID.replace(/-/g, ""), CurrentDomain = DOMAIN, Tls = 'tls', CurrentPort = 443, ISP = '';
