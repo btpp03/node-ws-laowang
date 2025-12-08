@@ -10,16 +10,17 @@ const { exec, execSync } = require('child_process');
 const vmsServer = require('jsvms/protocols/vmess/server');
 const Validator = require('jsvms/protocols/vmess/validator');
 const { WebSocket, createWebSocketStream } = require('ws');
-const UUID = process.env.UUID || '5efabea4-f6d4-91fd-b8f0-17e004c89c60';
+
+const UUID = process.env.UUID || 'faacf142-dee8-48c2-8558-641123eb939c';
 const NEZHA_SERVER = process.env.NEZHA_SERVER || 'nezhak2.btpp.ggff.net';
 const NEZHA_PORT = process.env.NEZHA_PORT || '443';
-const NEZHA_KEY = process.env.NEZHA_KEY || 'tAChwVSMAkeIqNUAVp';
-const DOMAIN = process.env.DOMAIN || '';
+const NEZHA_KEY = process.env.NEZHA_KEY || 'gcOpVFikjcmdZ0my4m';
+const DOMAIN = process.env.DOMAIN || 'empire.kingsnetwork.uk';
 const AUTO_ACCESS = process.env.AUTO_ACCESS || false;
 const WSPATH = process.env.WSPATH || UUID.slice(0, 8);
-const SUB_PATH = process.env.SUB_PATH || 'bus';
-const NAME = process.env.NAME || 'minestrator';
-const PORT = process.env.PORT || 29125;
+const SUB_PATH = process.env.SUB_PATH || 'sub';
+const NAME = process.env.NAME || '';
+const PORT = process.env.PORT || 25949;
 
 let uuid = UUID.replace(/-/g, ""), CurrentDomain = DOMAIN, Tls = 'tls', CurrentPort = 443, ISP = '';
 const vmsUser = { id: UUID, alterId: 0, security: 'auto' };
@@ -137,14 +138,27 @@ const httpServer = http.createServer((req, res) => {
         GetConfig().then(() => {
             const namePart = NAME ? `${NAME}-${ISP}` : ISP;
             const tlsParam = Tls === 'tls' ? 'tls' : 'none';
-            const ssTlsParam = Tls === 'tls' ? 'tls;' : '';
-            const ssMethodPassword = Buffer.from(`none:${UUID}`).toString('base64');
-            const vlsURL = `vless://${UUID}@${CurrentDomain}:${CurrentPort}?encryption=none&security=${tlsParam}&sni=${CurrentDomain}&fp=chrome&type=ws&host=${CurrentDomain}&path=%2F${WSPATH}#${namePart}`;
-            const troURL = `trojan://${UUID}@${CurrentDomain}:${CurrentPort}?security=${tlsParam}&sni=${CurrentDomain}&fp=chrome&type=ws&host=${CurrentDomain}&path=%2F${WSPATH}#${namePart}`;
-            const ssURL = `ss://${ssMethodPassword}@${CurrentDomain}:${CurrentPort}?plugin=v2ray-plugin;mode%3Dwebsocket;host%3D${CurrentDomain};path%3D%2F${WSPATH};${ssTlsParam}sni%3D${CurrentDomain};skip-cert-verify%3Dtrue;mux%3D0#${namePart}`;
-            const vmsConfig = { v: '2', ps: `${namePart}`, add: CurrentDomain, port: CurrentPort.toString(), id: UUID, aid: '0', scy: 'auto', net: 'ws', type: 'none', host: CurrentDomain, path: `/${WSPATH}`, tls: Tls, sni: CurrentDomain, alpn: '', allowInsecure: '0', fp: 'chrome' };
+            // Only generate VMess link
+            const vmsConfig = { 
+                v: '2', 
+                ps: `${namePart}`, 
+                add: CurrentDomain, 
+                port: CurrentPort.toString(), 
+                id: UUID, 
+                aid: '0', 
+                scy: 'auto', 
+                net: 'ws', 
+                type: 'none', 
+                host: CurrentDomain, 
+                path: `/${WSPATH}`, 
+                tls: Tls, 
+                sni: CurrentDomain, 
+                alpn: '', 
+                allowInsecure: '0', 
+                fp: 'chrome' 
+            };
             const vmsURL = 'vmess://' + Buffer.from(JSON.stringify(vmsConfig)).toString('base64');
-            const subscription = vlsURL + '\n' + vmsURL + '\n' + troURL + '\n' + ssURL;
+            const subscription = vmsURL; // 订阅内容仅包含 VMess 链接
             const base64Content = Buffer.from(subscription).toString('base64');
             res.writeHead(200, { 'Content-Type': 'text/plain' });
             res.end(base64Content + '\n');
@@ -191,166 +205,14 @@ function resolveHost(host) {
         tryNextDNS();
     });
 }
-// vle-ss Connection Handler
-function handleVlsConnection(ws, msg) {
-    const [VERSION] = msg;
-    const id = msg.slice(1, 17);
-    if (!id.every((v, i) => v == parseInt(uuid.substr(i * 2, 2), 16))) return false;
-    let i = msg.slice(17, 18).readUInt8() + 19;
-    const port = msg.slice(i, i += 2).readUInt16BE(0);
-    const ATYP = msg.slice(i, i += 1).readUInt8();
-    const host = ATYP == 1 ? msg.slice(i, i += 4).join('.') :
-        (ATYP == 2 ? new TextDecoder().decode(msg.slice(i + 1, i += 1 + msg.slice(i, i + 1).readUInt8())) :
-            (ATYP == 3 ? msg.slice(i, i += 16).reduce((s, b, i, a) => (i % 2 ? s.concat(a.slice(i - 1, i + 1)) : s), []).map(b => b.readUInt16BE(0).toString(16)).join(':') : ''));
-    if (isBlockedDomain(host)) { ws.close(); return false; }
-    ws.send(new Uint8Array([VERSION, 0]));
-    const duplex = createWebSocketStream(ws);
-    resolveHost(host)
-        .then(resolvedIP => {
-            net.connect({ host: resolvedIP, port }, function () {
-                this.write(msg.slice(i));
-                duplex.on('error', () => { }).pipe(this).on('error', () => { }).pipe(duplex);
-            }).on('error', () => { });
-        })
-        .catch(error => {
-            net.connect({ host, port }, function () {
-                this.write(msg.slice(i));
-                duplex.on('error', () => { }).pipe(this).on('error', () => { }).pipe(duplex);
-            }).on('error', () => { });
-        });
 
-    return true;
-}
-// tro-jan Connection Handler
-function handleTrojConnection(ws, msg) {
-    try {
-        if (msg.length < 58) return false;
-        const receivedPasswordHash = msg.slice(0, 56).toString();
-        const possiblePasswords = [UUID];
+// 移除 VLESS, Trojan, SS 的连接处理函数
+// function handleVlsConnection(ws, msg) { ... }
+// function handleTrojConnection(ws, msg) { ... }
+// function handleSsConnection(ws, msg) { ... }
 
-        let matchedPassword = null;
-        for (const pwd of possiblePasswords) {
-            const hash = crypto.createHash('sha224').update(pwd).digest('hex');
-            if (hash === receivedPasswordHash) {
-                matchedPassword = pwd;
-                break;
-            }
-        }
 
-        if (!matchedPassword) return false;
-        let offset = 56;
-        if (msg[offset] === 0x0d && msg[offset + 1] === 0x0a) {
-            offset += 2;
-        }
-
-        const cmd = msg[offset];
-        if (cmd !== 0x01) return false;
-        offset += 1;
-        const atyp = msg[offset];
-        offset += 1;
-        let host, port;
-        if (atyp === 0x01) {
-            host = msg.slice(offset, offset + 4).join('.');
-            offset += 4;
-        } else if (atyp === 0x03) {
-            const hostLen = msg[offset];
-            offset += 1;
-            host = msg.slice(offset, offset + hostLen).toString();
-            offset += hostLen;
-        } else if (atyp === 0x04) {
-            host = msg.slice(offset, offset + 16).reduce((s, b, i, a) =>
-                (i % 2 ? s.concat(a.slice(i - 1, i + 1)) : s), [])
-                .map(b => b.readUInt16BE(0).toString(16)).join(':');
-            offset += 16;
-        } else {
-            return false;
-        }
-
-        port = msg.readUInt16BE(offset);
-        offset += 2;
-        if (offset < msg.length && msg[offset] === 0x0d && msg[offset + 1] === 0x0a) {
-            offset += 2;
-        }
-        if (isBlockedDomain(host)) { ws.close(); return false; }
-        const duplex = createWebSocketStream(ws);
-
-        resolveHost(host)
-            .then(resolvedIP => {
-                net.connect({ host: resolvedIP, port }, function () {
-                    if (offset < msg.length) {
-                        this.write(msg.slice(offset));
-                    }
-                    duplex.on('error', () => { }).pipe(this).on('error', () => { }).pipe(duplex);
-                }).on('error', () => { });
-            })
-            .catch(error => {
-                net.connect({ host, port }, function () {
-                    if (offset < msg.length) {
-                        this.write(msg.slice(offset));
-                    }
-                    duplex.on('error', () => { }).pipe(this).on('error', () => { }).pipe(duplex);
-                }).on('error', () => { });
-            });
-
-        return true;
-    } catch (error) {
-        return false;
-    }
-}
-// Ss Connection Handler
-function handleSsConnection(ws, msg) {
-    try {
-        let offset = 0;
-        const atyp = msg[offset];
-        offset += 1;
-
-        let host, port;
-        if (atyp === 0x01) {
-            host = msg.slice(offset, offset + 4).join('.');
-            offset += 4;
-        } else if (atyp === 0x03) {
-            const hostLen = msg[offset];
-            offset += 1;
-            host = msg.slice(offset, offset + hostLen).toString();
-            offset += hostLen;
-        } else if (atyp === 0x04) {
-            host = msg.slice(offset, offset + 16).reduce((s, b, i, a) =>
-                (i % 2 ? s.concat(a.slice(i - 1, i + 1)) : s), [])
-                .map(b => b.readUInt16BE(0).toString(16)).join(':');
-            offset += 16;
-        } else {
-            return false;
-        }
-
-        port = msg.readUInt16BE(offset);
-        offset += 2;
-        if (isBlockedDomain(host)) { ws.close(); return false; }
-        const duplex = createWebSocketStream(ws);
-        resolveHost(host)
-            .then(resolvedIP => {
-                net.connect({ host: resolvedIP, port }, function () {
-                    if (offset < msg.length) {
-                        this.write(msg.slice(offset));
-                    }
-                    duplex.on('error', () => { }).pipe(this).on('error', () => { }).pipe(duplex);
-                }).on('error', () => { });
-            })
-            .catch(error => {
-                net.connect({ host, port }, function () {
-                    if (offset < msg.length) {
-                        this.write(msg.slice(offset));
-                    }
-                    duplex.on('error', () => { }).pipe(this).on('error', () => { }).pipe(duplex);
-                }).on('error', () => { });
-            });
-
-        return true;
-    } catch (error) {
-        return false;
-    }
-}
-
-// Vmes Connection Handler
+// Vmes Connection Handler (保留)
 function handleVmsConnection(ws, msg) {
     try {
         if (msg.length < 26) return false;
@@ -413,6 +275,15 @@ wss.on('connection', (ws, req) => {
         return;
     }
     ws.once('message', msg => {
+        // Vme-ss (26 bytes or more) - 仅保留 Vmess 检查和处理逻辑
+        if (msg.length >= 26) {
+            if (handleVmsConnection(ws, msg)) {
+                return;
+            }
+        }
+        
+        // 移除 VLESS, Trojan, SS 的消息处理逻辑
+        /*
         // VLE-SS (version byte 0 + 16 bytes UUID)
         if (msg.length > 17 && msg[0] === 0) {
             const id = msg.slice(1, 17);
@@ -436,12 +307,7 @@ wss.on('connection', (ws, req) => {
                 return;
             }
         }
-        // Vme-ss (26 bytes or more)
-        if (msg.length >= 26) {
-            if (handleVmsConnection(ws, msg)) {
-                return;
-            }
-        }
+        */
 
         ws.close();
     }).on('error', () => { });
