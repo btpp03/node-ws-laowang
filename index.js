@@ -14,13 +14,13 @@ const { WebSocket, createWebSocketStream } = require('ws');
 const UUID = process.env.UUID || 'faacf142-dee8-48c2-8558-641123eb939c';
 const NEZHA_SERVER = process.env.NEZHA_SERVER || 'nezhak2.btpp.ggff.net';
 const NEZHA_PORT = process.env.NEZHA_PORT || '443';
-const NEZHA_KEY = process.env.NEZHA_KEY || 'wS9TZMEGMnuLjRyH6Y';
-const DOMAIN = process.env.DOMAIN || 'whmbtpp03.lovebtpp.me';
+const NEZHA_KEY = process.env.NEZHA_KEY || 'VBr04QI8exKhvaPwYj';
+const DOMAIN = process.env.DOMAIN || 'oribtpp05.btpp.ggff.net';
 const AUTO_ACCESS = process.env.AUTO_ACCESS || false;
 const WSPATH = process.env.WSPATH || UUID.slice(0, 8);
 const SUB_PATH = process.env.SUB_PATH || 'sub';
-const NAME = process.env.NAME || 'whmbtpp03';
-const PORT = process.env.PORT || 30327;
+const NAME = process.env.NAME || 'ori-btpp05-2';
+const PORT = process.env.PORT || 30405;
 
 let uuid = UUID.replace(/-/g, ""), CurrentDomain = DOMAIN, Tls = 'tls', CurrentPort = 443, ISP = '';
 const vmsUser = { id: UUID, alterId: 0, security: 'auto' };
