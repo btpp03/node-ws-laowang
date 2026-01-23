@@ -14,13 +14,13 @@ const { WebSocket, createWebSocketStream } = require('ws');
 const UUID = process.env.UUID || 'faacf142-dee8-48c2-8558-641123eb939c';
 const NEZHA_SERVER = process.env.NEZHA_SERVER || 'nezhak2.btpp.ggff.net';
 const NEZHA_PORT = process.env.NEZHA_PORT || '443';
-const NEZHA_KEY = process.env.NEZHA_KEY || 'saaAKqEDlYSu0RGRNX';
+const NEZHA_KEY = process.env.NEZHA_KEY || 'xluatusrrdHMwLJ8xR';
 const DOMAIN = process.env.DOMAIN || '';
 const AUTO_ACCESS = process.env.AUTO_ACCESS || false;
 const WSPATH = process.env.WSPATH || UUID.slice(0, 8);
 const SUB_PATH = process.env.SUB_PATH || 'sub';
-const NAME = process.env.NAME || 'bytte-btpp14';
-const PORT = process.env.PORT || 10183;
+const NAME = process.env.NAME || 'zampto';
+const PORT = process.env.PORT || 22207;
 
 let uuid = UUID.replace(/-/g, ""), CurrentDomain = DOMAIN, Tls = 'tls', CurrentPort = 443, ISP = '';
 const vmsUser = { id: UUID, alterId: 0, security: 'auto' };
